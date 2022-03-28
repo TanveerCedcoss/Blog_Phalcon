@@ -1,6 +1,8 @@
 <?php
 
 use Phalcon\Mvc\Controller;
+use Phalcon\Logger;
+use Phalcon\Logger\Adapter\Stream;
 
 class SignupController extends Controller{
 
@@ -8,11 +10,25 @@ class SignupController extends Controller{
 
     }
 
-    public function registerAction(){
+    public function registerAction() 
+    {
+        $adapter = new Stream('../app/logs/signup.log');
+        $logger  = new Logger(
+            'messages',
+            [
+             'main' => $adapter,
+            ]
+        );
         $user = new Users();
-        print_r($_POST);
+        $sanitize = new \App\Components\MyEscaper();
+        $userInputData = array(
+            'username' => $sanitize->sanitize($this->request->getPost('username')),
+            'role' => $sanitize->sanitize($this->request->getPost('role')),
+            'password' => $sanitize->sanitize($this->request->getPost('password')),
+            'email' => $sanitize->sanitize($this->request->getPost('email')),
+        );
         $user->assign(
-            $this->request->getPost(),
+            $userInputData,
             [
                 'username',
                 'role',
@@ -29,6 +45,7 @@ class SignupController extends Controller{
             $this->view->message = "Register succesfully";
         }else{
             $this->view->message = "Not Register succesfully due to following reason: <br>".implode("<br>", $user->getMessages());
+            $logger->error(implode(' & ', $user->getMessages()));
         }
     }
 }

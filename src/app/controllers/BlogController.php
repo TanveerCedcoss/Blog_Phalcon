@@ -1,17 +1,20 @@
 <?php
 
 use Phalcon\Mvc\Controller;
+use Phalcon\Logger;
+use Phalcon\Logger\Adapter\Stream;
 
 
 class BlogController extends Controller
 {
-    // public function __construct()
-    // {
-    //     $
-    // }
     public function indexAction()
     {
-        
+        if ($this->cookies->has('remember')) {
+            $this->response->redirect('login');
+        }
+        else {
+            $this->response->redirect('blog/home');
+        }
     }
     public function homeAction()
     {
@@ -19,23 +22,40 @@ class BlogController extends Controller
     }
     public function writeAction()
     {
+        $adapter = new Stream('../app/logs/blog.log');
+        $logger  = new Logger(
+            'messages',
+            [
+             'main' => $adapter,
+            ]
+        );
         $this->view->title = "Write Blog";
-        session_start();
-        if (!isset($_SESSION['user'])) {
+
+        if (!$this->session->has('userDetail')) {
             $this->response->redirect('login');
         }
         if ($this->request->ispost()) {
-            $username = $_SESSION['user']['username'];
-            $userId = $_SESSION['user']['id'];
+            $username = $this->session->userDetail->username;
+            $userId =  $this->session->userDetail->id;
+      
             $blog = new Blogs();
+            $sanitize = new \App\Components\MyEscaper();
+            $blogInputData = array(
+                'heading' => $sanitize->sanitize($this->request->getPost('heading')),
+                'category' => $sanitize->sanitize($this->request->getPost('category')),
+                'tags' => $sanitize->sanitize($this->request->getPost('tags')),
+                'brief' => $sanitize->sanitize($this->request->getPost('brief')),
+                'content' => $sanitize->sanitize($this->request->getPost('content'))
+            );
+
             $blog->assign(
-                $this->request->getPost(),
+                $blogInputData,
                 [
                     'heading',
                     'category',
                     'tags',
                     'brief',
-                    'description'
+                    'content',
                 ]
             );
           
@@ -49,8 +69,8 @@ class BlogController extends Controller
                 $this->view->message = "Submitted succesfully";
             } else {
                 $this->view->message = "Not submitted succesfully due to following reason: <br>".implode("<br>", $blog->getMessages());
+                $logger->error(implode(' & ', $blog->getMessages()));
             }
-            // $this->response->redirect('blog/write');
         }
        
     }

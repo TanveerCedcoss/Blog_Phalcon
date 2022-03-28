@@ -1,17 +1,9 @@
 <?php
-session_start();
-//print_r($_SESSION['user']);
-?>
-<!doctype html>
-<html lang="en">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="">
-  <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
-  <meta name="generator" content="Hugo 0.88.1">
-  <title>Homepage</title>
+// print_r($this->session->userDetail);
+// die();
+?>
+
 
   <link rel="canonical" href="https://getbootstrap.com/docs/5.1/examples/dashboard/">
 
@@ -91,8 +83,6 @@ session_start();
   </style>
 
 
-  <!-- Custom styles for this template -->
-  <!-- <link href="./assets/css/dashboard.css" rel="stylesheet"> -->
 </head>
 
 <body>
@@ -105,16 +95,17 @@ session_start();
     <nav class="site-navigation">
       <ul class="nav">
         <?php
-        if (isset($_SESSION['user'])) {
-            if ($_SESSION['user']['role']=='admin') {
+        if ($this->session->has('userDetail')) {
+            if ($this->session->userDetail->role=='admin') {
                 echo '<li><a href="'.URLROOT.'dashboard/index/users">Dashboard</a></li>';
             }
         }
         ?>
         <li><a href="<?php echo URLROOT;?>blog/write">Write your own blog</a></li>
         <?php
-        if (isset($_SESSION['user'])) {
-            echo '<li><a href="'.URLROOT.'login">Sign out</a></li>';
+   
+        if ($this->session->has('userDetail')) {
+            echo '<li><a href="'.URLROOT.'login/logout">Sign out</a></li>';
         } else {
             echo '<li><a href="'.URLROOT.'login">Sign in</a></li>';
         }
@@ -160,5 +151,3 @@ session_start();
     </div>
   </div>
 </body>
-
-</html>

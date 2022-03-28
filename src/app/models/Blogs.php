@@ -9,6 +9,7 @@ Class Blogs extends Model
     public $username;
     public $category;
     public $description;
+    public $content;
     public $tags;
     public $brief;
 }
